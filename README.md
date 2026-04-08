@@ -2,6 +2,12 @@
 
 Simulación de tres alambres paralelos infinitos con cálculo de fuerza magnética y campo magnético resultante por unidad de longitud.
 
+## Enunciado
+
+Tres alambres infinitos se disponen paralelos según se muestra en la figura. Suponiendo que por los alambres circulan corrientes con igual sentido, encontrar la fuerza por unidad de longitud que experimenta el alambre `b` debido a las corrientes que circulan por los alambres `a` y `c`.
+
+![Figura del enunciado](assets/p9.png)
+
 ## Qué hace
 
 El script [simulacion_tres_alambres.py](/home/roberto/tp8p9/simulacion_tres_alambres.py) permite:
