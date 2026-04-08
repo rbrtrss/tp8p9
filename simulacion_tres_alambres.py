@@ -30,16 +30,44 @@ def describir_sentido(valor):
     return "+j" if valor >= 0 else "-j"
 
 
+def formatear_componente_vectorial(valor, eje, unidad="", decimales=3, latex=False, cientifica=False):
+    magnitud = abs(valor)
+    if np.isclose(valor, 0.0):
+        return "0"
+
+    if eje == "j":
+        direccion = "(j)" if valor > 0 else "(-j)"
+    else:
+        direccion = eje if valor > 0 else f"-{eje}"
+    formato = f".{decimales}e" if cientifica else f".{decimales}f"
+    valor_str = format(magnitud, formato)
+
+    if latex:
+        if unidad:
+            return rf"{valor_str}\,{direccion}\,\mathrm{{{unidad}}}"
+        return rf"{valor_str}\,{direccion}"
+
+    return f"{valor_str} {direccion}" + (f" {unidad}" if unidad else "")
+
+
+def formatear_corriente(valor, decimales=3, latex=False):
+    return formatear_componente_vectorial(
+        valor, eje="j", unidad="A", decimales=decimales, latex=latex
+    )
+
+
+def describir_direccion_unitaria(valor, eje):
+    if np.isclose(valor, 0.0):
+        return "0"
+    return eje if valor > 0 else f"-{eje}"
+
+
 def describir_direccion_fuerza(fuerza_x):
-    if np.isclose(fuerza_x, 0.0):
-        return "0 i"
-    return "+i" if fuerza_x > 0 else "-i"
+    return describir_direccion_unitaria(fuerza_x, eje="i")
 
 
 def describir_direccion_campo(campo_z):
-    if np.isclose(campo_z, 0.0):
-        return "0 k"
-    return "+k" if campo_z > 0 else "-k"
+    return describir_direccion_unitaria(campo_z, eje="k")
 
 
 def solicitar_float(mensaje, minimo=None, permitir_cero=False, default=None):
@@ -121,7 +149,7 @@ def calcular_fuerzas(Ia, Ib, Ic, d, objetivo):
 def imprimir_resumen(corrientes, contribuciones, objetivo, resultante, campos, campo_resultante):
     print("\nCorrientes configuradas:")
     for label in LABELS:
-        print(f"I_{label} = {corrientes[label]:.3f} A ({describir_sentido(corrientes[label])})")
+        print(f"I_{label} = {formatear_corriente(corrientes[label])}")
 
     print(f"\nFuerzas sobre el alambre {objetivo}:")
     for fuente, fuerza_x in contribuciones:
@@ -131,7 +159,7 @@ def imprimir_resumen(corrientes, contribuciones, objetivo, resultante, campos, c
         )
 
     print(
-        f"F_{objetivo}/L = {resultante:.6e} N/m "
+        f"F_{objetivo}/L = {abs(resultante):.6e} N/m "
         f"({describir_direccion_fuerza(resultante)})"
     )
 
@@ -143,7 +171,7 @@ def imprimir_resumen(corrientes, contribuciones, objetivo, resultante, campos, c
         )
 
     print(
-        f"B_{objetivo} = {campo_resultante:.6e} T "
+        f"B_{objetivo} = {abs(campo_resultante):.6e} T "
         f"({describir_direccion_campo(campo_resultante)})"
     )
 
@@ -171,7 +199,7 @@ def dibujar_alambres(ax, posiciones, corrientes):
         ax.text(
             x + offsets_texto[label],
             1.05,
-            rf"$I_{{{label}}}={corriente:.1f}\,\mathrm{{A}}$",
+            rf"$I_{{{label}}}={formatear_corriente(corriente, decimales=1, latex=True)}$",
             va="bottom",
             fontsize=11,
             color=color,
@@ -262,7 +290,8 @@ def dibujar_fuerzas(ax, objetivo, posiciones, contribuciones, resultante):
         ax.text(
             fin_x + np.sign(resultante) * desplazamiento_texto,
             0.62,
-            rf"$\frac{{F_{{{objetivo}}}}}{{L}} = {resultante:.2e}\,\mathrm{{N/m}}$",
+            rf"$\frac{{F_{{{objetivo}}}}}{{L}} = "
+            rf"{formatear_componente_vectorial(resultante, eje='i', unidad='N/m', decimales=2, latex=True, cientifica=True)}$",
             ha="left" if resultante > 0 else "right",
             fontsize=11,
             color="tab:red",
@@ -290,7 +319,14 @@ def dibujar_campo_resultante(ax, objetivo, posiciones, campo_resultante):
         return
 
     simbolo = r"$\odot$" if campo_resultante > 0 else r"$\otimes$"
-    texto = f"{simbolo} " + rf"$B_{{{objetivo}}}={abs(campo_resultante):.2e}\,\mathrm{{T}}$"
+    texto = (
+        f"{simbolo} "
+        + rf"$B_{{{objetivo}}}="
+        + formatear_componente_vectorial(
+            campo_resultante, eje="k", unidad="T", decimales=2, latex=True, cientifica=True
+        )
+        + "$"
+    )
     ax.text(x_texto, 0.95, texto, ha=ha, fontsize=12, color=color)
 
 
