@@ -55,6 +55,42 @@ Las dependencias están declaradas en [pyproject.toml](/home/roberto/tp8p9/pypro
 uv sync
 ```
 
+## Ejecutable autocontenido
+
+Podés generar un ejecutable nativo con `PyInstaller`. El resultado incluye el intérprete de Python y las dependencias del proyecto, pero sigue siendo específico por sistema operativo.
+
+### Build local
+
+Generá el binario sin modificar las dependencias del proyecto:
+
+```bash
+uv run --with pyinstaller pyinstaller --noconfirm --clean --onefile --name simulacion_tres_alambres simulacion_tres_alambres.py
+```
+
+El ejecutable queda en:
+
+- Linux/macOS: `dist/simulacion_tres_alambres`
+- Windows: `dist/simulacion_tres_alambres.exe`
+
+### Build automático para Linux, Windows y macOS
+
+El repositorio incluye el workflow [build-executables.yml](/home/roberto/tp8p9/.github/workflows/build-executables.yml), que compila el programa en:
+
+- `ubuntu-latest`
+- `windows-latest`
+- `macos-latest`
+
+Se ejecuta en:
+
+- `push` a `main` o `master`;
+- `pull_request`;
+- ejecución manual con `workflow_dispatch`;
+- tags que empiecen con `v`, por ejemplo `v1.0.0`.
+
+Cada corrida publica tres artefactos descargables, uno por plataforma, desde la sección de artefactos de GitHub Actions.
+
+Si el workflow corre sobre un tag que empiece con `v`, por ejemplo `v1.0.0`, además crea o actualiza el GitHub Release correspondiente y adjunta los tres binarios como assets descargables.
+
 ## Uso
 
 Ejecutá:
